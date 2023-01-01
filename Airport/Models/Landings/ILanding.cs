@@ -2,5 +2,6 @@
 {
     public interface ILanding
     {
+        public Task Land();
     }
 }

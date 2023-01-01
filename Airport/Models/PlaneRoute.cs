@@ -1,16 +1,22 @@
-﻿namespace Airport.Models
+﻿
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Airport.Models
 {
     public class PlaneRoute
     {
-        List<Station> _stations;
+         public List<Station>? _stations;
+
         int _current = 0;
-        public PlaneRoute(List<Station> stations)
+        public PlaneRoute()
         {
-            _stations = stations;
         }
+
+
         public Station GetNextStation()
         {
-            return _stations[_current++];
+            if (_current + 1 > _stations.Count) return null;
+            return _stations[_current++] ;
         }
     }
 }
