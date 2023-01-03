@@ -42,49 +42,55 @@ namespace Airport.Services.Class
                 var departurePath = AllStations[7];
                 while (true)
                 {
-                    if (
-                    term1.CurrentPlane != null &&
-                    term2.CurrentPlane != null &&
-                    departurePath.CurrentPlane != null)
+                    try
                     {
-                        if (await ctChecker.CheckIfStopOutcoming())
+                        if (
+                        term1.CurrentPlane != null &&
+                        term2.CurrentPlane != null &&
+                        departurePath.CurrentPlane != null)
                         {
-                            if (await ctChecker.CheckStopped())
+                            if (await ctChecker.CheckIfStopOutcoming())
                             {
-                                Stopped = true;
-                                Console.WriteLine(DateTime.Now);
-                                Console.WriteLine("_______________________________Airport has Stopped");
+                                if (await ctChecker.CheckStopped())
+                                {
+                                    Stopped = true;
+                                    Console.WriteLine(DateTime.Now);
+                                    Console.WriteLine("_______________________________Airport has Stopped");
+                                }
+
+                            }
+                            if (await ctChecker.CheckClogged())
+                            {
+                                runway.incomingDelayed = true;
+                                Console.WriteLine("Airport is clogged");
                             }
 
                         }
-                        else if (await ctChecker.CheckClogged())
+                        else
+                        {
+
+                            runway.incomingDelayed = false;
+                            Console.WriteLine("Airport is not clogged");
+                        }
+                        if (await ctChecker.CheckIfStopIncoming())
                         {
                             runway.incomingDelayed = true;
-                            Console.WriteLine("Airport is clogged");
+                            term1.outcomingDelayed = true;
+                            Console.WriteLine("outcoming closed");
                         }
+                        else
+                        {
+                            runway.incomingDelayed = false;
+                            term1.outcomingDelayed = false;
+                            Console.WriteLine("outcoming opened");
+                        }
+                        Console.WriteLine(".");
+                        Thread.Sleep(500);
 
                     }
-                    else
-                    {
-
-                        runway.incomingDelayed = false;
-                        Console.WriteLine("Airport is not clogged");
-                    }
-                    if (await ctChecker.CheckIfStopIncoming())
-                    {
-                        runway.incomingDelayed = true;
-                        term1.outcomingDelayed = true;
-                        Console.WriteLine("outcoming closed");
-                    }
-                    else
-                    {
-                        runway.incomingDelayed = false;
-                        term1.outcomingDelayed = false;
-                        Console.WriteLine("outcoming opened");
-                    }
-
-                    Thread.Sleep(500);
+                    catch (Exception ex) { Console.WriteLine(ex); }
                 }
+                Console.WriteLine("why?");
             });
         }
 
@@ -105,7 +111,7 @@ namespace Airport.Services.Class
                             AllStations[5],
                             AllStations[6],
                         }
-                    }; 
+                    };
                 case "takeOff":
                     return new PlaneRoute
                     {

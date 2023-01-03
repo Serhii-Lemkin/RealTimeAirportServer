@@ -14,8 +14,6 @@
         {
             await Task.Run(async () =>
             {
-                //var terminal1 = _route._stations!.First(x => x.StationId == 6);
-                //await terminal1.Enter(new Plane { PlaneName = "bloop"});
                 var station = _route.GetNextStation();
                 Station prevStation = null;
                 var task = tcs.Task;
@@ -36,10 +34,11 @@
                     {
                         
                         var term1 = station;
-                        //var term2 = _route._stations!.First(x => x.StationId == 7);
                         var term2 = _route.GetNextStation();
-                        await Task.WhenAny(term1.Enter(plane, tcs), term2.Enter(plane, tcs));
-                        string s = await task;
+                        CancellationTokenSource ct = new();
+                        string s = await EnterOneStation(term1, term2, ct.Token);
+                        ct.Cancel();
+                        //tcs.SetResult("");
                         prevStation.Exit();
                         Thread.Sleep(3000);
 
@@ -49,6 +48,16 @@
                     }
                 }
 
+            });
+        }
+
+        async Task<string> EnterOneStation(Station s1, Station s2, CancellationToken token)
+        {
+            return await Task.Run(async()=>
+            {
+                var result = await Task.WhenAny<string>(s1.Enter(plane, tcs, token), s2.Enter(plane, tcs, token));
+                string s = await result;
+                return s;
             });
         }
     }

@@ -44,7 +44,7 @@ namespace Airport.Services
         {
             return await Task.Run(async () =>
             {
-                return AllStations[4].CurrentPlane != null && AllStations[3].CurrentPlane != null;
+                return AllStations[4].CurrentPlane != null && AllStations[3].CurrentPlane != null && AllStations[7].CurrentPlane != null && AllStations[6]!= null;
             });
         }
     }

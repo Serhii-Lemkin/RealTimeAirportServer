@@ -33,39 +33,39 @@ namespace Airport.Models
             incomingDelayed = false;
         }
 
-        internal async Task Enter(Plane plane, TaskCompletionSource<string>? tcs = null)
+        internal async Task<string> Enter(Plane plane, TaskCompletionSource<string>? tcs = null, CancellationToken token = new CancellationToken())
         {
-            if (tcs != null && tcs.Task.IsCompleted) return;
+            if (token.IsCancellationRequested) return "";
+            if (tcs != null && tcs.Task.IsCanceled) return "";
             while (true)
             {
-
-                await _sem.WaitAsync();
-                //if (StationName == "Terminal 1" || StationName == "Terminal 2") Console.WriteLine($"{StationName} entered");
-                if (tcs != null && tcs.Task.IsCompleted)
+                if (tcs != null && tcs.Task.IsCanceled)
                 {
-                    _sem.Release();
-                    return;
+                    //_sem.Release();
+                    return "";
                 }
                 if (plane.Destination == "land" && incomingDelayed)
                 {
-                    _sem.Release();
+                    Thread.Sleep(500);
                     continue;
                 }
                 if (plane.Destination == "takeOff" && outcomingDelayed)
                 {
-                    _sem.Release();
+                    Thread.Sleep(500);
                     continue;
                 }
+                await _sem.WaitAsync();
                 if (tcs != null && tcs.Task.IsCompleted)
                 {
                     _sem.Release();
-                    return;
+                    return "";
                 }
+                if (token.IsCancellationRequested) { _sem.Release(); return ""; }
                 CurrentPlane = plane;
+                tcs?.SetCanceled();
                 break;
             }
-            tcs?.SetResult(StationName!);
-            tcs?.SetCanceled();
+            return StationName;
         }
 
         internal void Exit()

@@ -27,11 +27,12 @@
                         var term2 = _route.GetNextStation();
 
 
-                        var manyStations = new List<Task> {
-                            term1.Enter(plane, tcs), term2.Enter(plane,tcs)
-                        };
-                        string s = await task;
-                        var result = await Task.WhenAny(manyStations);
+                        
+                        CancellationTokenSource ct = new();
+                        string s = await EnterOneStation(term1, term2 ,ct.Token);
+                        ct.Cancel();
+                        //tcs.SetResult("");
+                        //var result = await Task.WhenAny(manyStations);
 
                         Thread.Sleep(3000);
 
@@ -42,7 +43,7 @@
                         station = _route.GetNextStation();
                     }
                     await station.Enter(plane);
-                    prevStation.Exit();
+                    prevStation?.Exit();
                     prevStation = station;
                     station = _route.GetNextStation();
                      //prevStation.Exit();
@@ -52,6 +53,16 @@
                         prevStation.Exit();
                     }
                 }
+            });
+        }
+
+        async Task<string> EnterOneStation(Station s1, Station s2, CancellationToken token)
+        {
+            return await Task.Run(async () =>
+            {
+                var result = await Task.WhenAny<string>(s1.Enter(plane, tcs, token), s2.Enter(plane, tcs, token));
+                string s = await result;
+                return s;
             });
         }
     }
