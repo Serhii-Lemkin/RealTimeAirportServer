@@ -1,8 +1,10 @@
-﻿using Airport.Models;
+﻿using Airport.Hubs;
+using Airport.Models;
 using Airport.Models.Landings;
 using Airport.Models.Takeoffs;
 using Airport.Services.Interface;
 using AirportProjct.Models;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Airport.Services.Class
 {
@@ -10,13 +12,15 @@ namespace Airport.Services.Class
     {
         bool _isActive = false;
         List<ILanding> _landings = new();
-        List<ITakeingOff> _takeoffs = new();
+        List<ITakingOff> _takeoffs = new();
 
         private readonly IControllTower _controllTower;
+        private readonly IHubContext<AirportHub> hub;
 
-        public AirportLogic(IControllTower controllTower)
+        public AirportLogic(IControllTower controllTower, IHubContext<AirportHub> hub)
         {
             _controllTower = controllTower;
+            this.hub = hub;
             _controllTower.CheckState();
         }
 
@@ -37,7 +41,7 @@ namespace Airport.Services.Class
         {
             var route = _controllTower.GetRoute(plane.Destination);
             if (route == null) return;
-            var landing = new Landing(plane, route);
+            var landing = new Landing(plane, route, hub);
             _landings.Add(landing);
             await landing.Land();
         }
@@ -46,14 +50,31 @@ namespace Airport.Services.Class
         {
             var route = _controllTower.GetRoute(plane.Destination);
             if (route == null) return;
-            var takingOff = new TakingOff(plane, route);
+            var takingOff = new TakingOff(plane, route, hub);
             _takeoffs.Add(takingOff);
             await takingOff.TakeOff();
         }
 
-        public List<StationState> GetCurrentState()
+        public List<StationState> GetCurrentState() => _controllTower.GetCurrentState();
+
+        public List<Plane> GetTakeOffs()
         {
-            return _controllTower.GetCurrentState();
+            var takeoffs = new List<Plane>();
+            foreach (var takeoff in _takeoffs)
+            {
+                if (takeoff.GetPlane().Finished == false) takeoffs.Add(takeoff.GetPlane());
+            }
+            return takeoffs;
+        }
+
+        public List<Plane> GetLandings()
+        {
+            var landings = new List<Plane>();
+            foreach (var landing in _landings)
+            {
+                if (landing.GetPlane().Finished == false) landings.Add(landing.GetPlane());
+            }
+            return landings;
         }
     }
 }

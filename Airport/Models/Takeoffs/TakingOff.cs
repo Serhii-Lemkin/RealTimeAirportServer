@@ -1,15 +1,24 @@
-﻿namespace Airport.Models.Takeoffs
+﻿using Airport.Hubs;
+using Microsoft.AspNetCore.SignalR;
+
+namespace Airport.Models.Takeoffs
 {
-    public class TakingOff : ITakeingOff
+    public class TakingOff : ITakingOff
     {
         public TaskCompletionSource<string> tcs = new TaskCompletionSource<string>();
-        private Plane plane;
+        Plane plane;
         private PlaneRoute _route;
-        public TakingOff(Plane plane, PlaneRoute route)
+        private readonly IHubContext<AirportHub> hub;
+
+        public TakingOff(Plane plane, PlaneRoute route, Microsoft.AspNetCore.SignalR.IHubContext<Hubs.AirportHub> hub)
         {
             this.plane = plane;
             _route = route;
+            this.hub = hub;
         }
+
+        public Plane GetPlane() => plane;
+
         public async Task TakeOff()
         {
             await Task.Run(async () =>
@@ -25,12 +34,12 @@
                     {
                         var term1 = station;
                         var term2 = _route.GetNextStation();
-
-
                         
                         CancellationTokenSource ct = new();
                         string s = await EnterOneStation(term1, term2 ,ct.Token);
                         ct.Cancel();
+                        plane.CurrentStation = s;
+                        UpdateUI();
                         //tcs.SetResult("");
                         //var result = await Task.WhenAny(manyStations);
 
@@ -39,10 +48,12 @@
                         if (s == "Terminal 1") station = term1;
                         if (s == "Terminal 2") station = term2;
                         prevStation = station;
-
+                        plane.CurrentStation = station.StationName!;
                         station = _route.GetNextStation();
                     }
                     await station.Enter(plane);
+                    plane.CurrentStation = station.StationName!;
+                    UpdateUI();
                     prevStation?.Exit();
                     prevStation = station;
                     station = _route.GetNextStation();
@@ -53,6 +64,9 @@
                         prevStation.Exit();
                     }
                 }
+                plane.CurrentStation = "Finished";
+                plane.Finished = true;
+                UpdateUI();
             });
         }
 
@@ -64,6 +78,10 @@
                 string s = await result;
                 return s;
             });
+        }
+        async Task UpdateUI()
+        {
+            _ = hub.Clients.All.SendAsync("takeoff", plane);
         }
     }
 }

@@ -11,5 +11,7 @@ namespace Airport.Services.Interface
         public Task Land(Plane plane);
         public Task TakeOff(Plane plane);
         public List<StationState> GetCurrentState();
+        public List<Plane> GetTakeOffs();
+        public List<Plane> GetLandings();
     }
 }

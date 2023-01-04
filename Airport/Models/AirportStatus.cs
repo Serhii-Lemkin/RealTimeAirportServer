@@ -7,6 +7,6 @@ namespace AirportProjct.Models
     {
         public bool IsActive { get; internal set; }
         public List<ILanding> Landings { get; internal set; }
-        public List<ITakeingOff> TakeOffs { get; internal set; }
+        public List<ITakingOff> TakeOffs { get; internal set; }
     }
 }

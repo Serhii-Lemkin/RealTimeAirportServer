@@ -1,7 +1,8 @@
 ﻿namespace Airport.Models.Takeoffs
 {
-    public interface ITakeingOff
+    public interface ITakingOff
     {
+        public Plane GetPlane();
         public Task TakeOff();
     }
 }

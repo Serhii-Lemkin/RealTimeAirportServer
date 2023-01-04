@@ -8,5 +8,7 @@ namespace Airport.Models
     {
         public string PlaneName { get; set; }
         public string Destination { get; set; }
+        public bool Finished { get; set; }
+        public string CurrentStation { get; set; }
     }
 }

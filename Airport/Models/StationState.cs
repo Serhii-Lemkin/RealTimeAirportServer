@@ -2,7 +2,7 @@
 {
     public class StationState
     {
-        public int StationId { get; set; }
+        public string StationName { get; set; }
         public Plane CurrentPlane { get; set; }
     }
 }

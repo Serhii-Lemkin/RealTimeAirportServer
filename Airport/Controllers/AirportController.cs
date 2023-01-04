@@ -1,5 +1,6 @@
 ﻿using Airport.Hubs;
 using Airport.Models;
+using Airport.Services.Class;
 using Airport.Services.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -51,10 +52,19 @@ namespace Airport.Controllers
             _airportLogic.TakeOff(p);
         }
 
-        [HttpGet("/current-state")]
+        [HttpGet("current-state")]
         public ActionResult<List<StationState>> GetCurrentState() {
-            Response.Headers.Add("X-header-empty", "");
             return Ok(_airportLogic.GetCurrentState());
+        }
+        [HttpGet("takeoffs")]
+        public ActionResult<List<Plane>> GetTakeOffs()
+        {
+            return Ok(_airportLogic.GetTakeOffs());
+        }
+        [HttpGet("landings")]
+        public ActionResult<List<Plane>> GetLandings()
+        {
+            return Ok(_airportLogic.GetLandings());
         }
     }
 }

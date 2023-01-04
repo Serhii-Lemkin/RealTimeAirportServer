@@ -136,7 +136,7 @@ namespace Airport.Services.Class
             {
                 var station = new StationState();
                 if (x.CurrentPlane != null) station.CurrentPlane = x.CurrentPlane;
-                station.StationId = x.StationId;
+                station.StationName = x.StationName;
                 state.Add(station);
             });
             return state;
