@@ -1,4 +1,5 @@
 ﻿using Airport.Hubs;
+using Airport.Repositories;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Airport.Models.Takeoffs
@@ -9,12 +10,14 @@ namespace Airport.Models.Takeoffs
         Plane plane;
         private PlaneRoute _route;
         private readonly IHubContext<AirportHub> hub;
+        private readonly IPlaneHistoryRepository history;
 
-        public TakingOff(Plane plane, PlaneRoute route, Microsoft.AspNetCore.SignalR.IHubContext<Hubs.AirportHub> hub)
+        public TakingOff(Plane plane, PlaneRoute route, Microsoft.AspNetCore.SignalR.IHubContext<Hubs.AirportHub> hub, Repositories.IPlaneHistoryRepository history)
         {
             this.plane = plane;
             _route = route;
             this.hub = hub;
+            this.history = history;
         }
 
         public Plane GetPlane() => plane;
@@ -64,7 +67,7 @@ namespace Airport.Models.Takeoffs
                         prevStation.Exit();
                     }
                 }
-                plane.CurrentStation = "Finished";
+                plane.CurrentStation = "";
                 plane.Finished = true;
                 UpdateUI();
             });
@@ -74,13 +77,15 @@ namespace Airport.Models.Takeoffs
         {
             return await Task.Run(async () =>
             {
-                var result = await Task.WhenAny<string>(s1.Enter(plane, tcs, token), s2.Enter(plane, tcs, token));
+                var result = await Task.WhenAny<string>(s2.Enter(plane, tcs, token), s1.Enter(plane, tcs, token));
                 string s = await result;
                 return s;
             });
         }
         async Task UpdateUI()
         {
+            plane.TimeOfAction = DateTime.Now.ToUniversalTime();
+            history.AddRecord(plane);
             _ = hub.Clients.All.SendAsync("takeoff", plane);
         }
     }

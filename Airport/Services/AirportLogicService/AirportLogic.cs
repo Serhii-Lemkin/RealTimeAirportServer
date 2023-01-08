@@ -2,6 +2,7 @@
 using Airport.Models;
 using Airport.Models.Landings;
 using Airport.Models.Takeoffs;
+using Airport.Repositories;
 using Airport.Services.Interface;
 using AirportProjct.Models;
 using Microsoft.AspNetCore.SignalR;
@@ -16,33 +17,23 @@ namespace Airport.Services.Class
 
         private readonly IControllTower _controllTower;
         private readonly IHubContext<AirportHub> hub;
+        private readonly IPlaneHistoryRepository history;
 
-        public AirportLogic(IControllTower controllTower, IHubContext<AirportHub> hub)
+        public AirportLogic(IControllTower controllTower, IHubContext<AirportHub> hub, IPlaneHistoryRepository history)
         {
             _controllTower = controllTower;
             this.hub = hub;
+            this.history = history;
             _controllTower.CheckState();
+
         }
-
-        public async Task<AirportStatus> GetStatus()
-        {
-            return new AirportStatus
-            {
-                IsActive = _isActive,
-                Landings = _landings,
-                TakeOffs = _takeoffs
-            };
-        }
-
-        public void Start() => _isActive = true;
-        public void Stop() => _isActive = false;
-
         public async Task Land(Plane plane)
         {
             var route = _controllTower.GetRoute(plane.Destination);
             if (route == null) return;
-            var landing = new Landing(plane, route, hub);
+            var landing = new Landing(plane, route, hub, history);
             _landings.Add(landing);
+            history.AddPlane(plane.PlaneName, plane.Destination);
             await landing.Land();
         }
 
@@ -50,12 +41,15 @@ namespace Airport.Services.Class
         {
             var route = _controllTower.GetRoute(plane.Destination);
             if (route == null) return;
-            var takingOff = new TakingOff(plane, route, hub);
+            var takingOff = new TakingOff(plane, route, hub, history);
             _takeoffs.Add(takingOff);
+            history.AddPlane(plane.PlaneName, plane.Destination);
             await takingOff.TakeOff();
         }
 
         public List<StationState> GetCurrentState() => _controllTower.GetCurrentState();
+
+        public StationState GetCurrentState(string stationName) => _controllTower.GetCurrentState().FirstOrDefault(x => x.StationName == stationName)!;
 
         public List<Plane> GetTakeOffs()
         {

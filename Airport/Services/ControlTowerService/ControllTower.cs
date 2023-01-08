@@ -1,14 +1,16 @@
 ﻿using Airport.Hubs;
 using Airport.Models;
+using Airport.Repositories;
 using Airport.Services.Interface;
 using Microsoft.AspNetCore.SignalR;
 
-namespace Airport.Services.Class
+namespace Airport.Services.ControlTower
 {
     public class ControllTower : IControllTower
     {
         private readonly List<Station> AllStations;
         private readonly ControlTowerChecker ctChecker;
+
         public bool Stopped { get; private set; }
         public IHubContext<AirportHub> Hub { get; }
 

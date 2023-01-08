@@ -1,5 +1,7 @@
 ﻿using Airport.Hubs;
+using Airport.Repositories;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Airport.Models.Landings
 {
@@ -9,12 +11,14 @@ namespace Airport.Models.Landings
         private Plane plane;
         private PlaneRoute _route;
         private readonly IHubContext<AirportHub> hub;
+        private readonly IPlaneHistoryRepository history;
 
-        public Landing(Plane plane, PlaneRoute route, Microsoft.AspNetCore.SignalR.IHubContext<Hubs.AirportHub> hub)
+        public Landing(Plane plane, PlaneRoute route, Microsoft.AspNetCore.SignalR.IHubContext<Hubs.AirportHub> hub, Repositories.IPlaneHistoryRepository history)
         {
             this.plane = plane;
             _route = route;
             this.hub = hub;
+            this.history = history;
         }
 
         public Plane GetPlane() => plane;
@@ -79,6 +83,8 @@ namespace Airport.Models.Landings
         }
         async Task UpdateUI()
         {
+            plane.TimeOfAction = DateTime.Now.ToUniversalTime();
+            history.AddRecord(plane);
             _ = hub.Clients.All.SendAsync("land", plane);
         }
     }

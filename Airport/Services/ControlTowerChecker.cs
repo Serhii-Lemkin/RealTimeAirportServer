@@ -12,7 +12,7 @@ namespace Airport.Services
 
         public async Task<bool> CheckIfStopIncoming()
         {
-            return await Task.Run(async () =>
+            return await Task.Run(() =>
             {
                 return (AllStations[3].CurrentPlane != null && AllStations[3].CurrentPlane.Destination == "land") || AllStations[4].CurrentPlane != null;
             });
@@ -20,7 +20,7 @@ namespace Airport.Services
 
         public async Task<bool> CheckClogged()
         {
-            return await Task.Run(async () =>
+            return await Task.Run(() =>
             {
                 return AllStations[5].CurrentPlane.Destination == "takeOff" &&
                             AllStations[6].CurrentPlane.Destination == "takeOff" &&
@@ -30,7 +30,7 @@ namespace Airport.Services
 
         public async Task<bool> CheckStopped()
         {
-            return await Task.Run(async () =>
+            return await Task.Run(() =>
             {
                 return  AllStations[5].CurrentPlane.Destination == "takeOff" &&
                                 AllStations[3].CurrentPlane.Destination == "land" &&
@@ -42,7 +42,7 @@ namespace Airport.Services
 
         public async Task<bool> CheckIfStopOutcoming()
         {
-            return await Task.Run(async () =>
+            return await Task.Run(() =>
             {
                 return AllStations[4].CurrentPlane != null && AllStations[3].CurrentPlane != null && AllStations[7].CurrentPlane != null && AllStations[6]!= null;
             });

@@ -1,10 +1,12 @@
-﻿using Airport.Hubs;
+﻿using Airport.data;
+using Airport.Hubs;
 using Airport.Models;
-using Airport.Services.Class;
+using Airport.Repositories;
 using Airport.Services.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Airport.Controllers
 {
@@ -21,23 +23,13 @@ namespace Airport.Controllers
             this.hub = hub;
         }
 
-        [HttpGet("/init")]
-        public async Task<IActionResult> Init()
-        {
-            var tmp = await _airportLogic.GetStatus();
-            if (!tmp.IsActive)
-            {
-                _airportLogic.Start();
-                return Ok("inited");
-            } 
-            return Ok("already initialized");
-        }
         [HttpGet("/land/{name}")]
         public void Land(string name)
         {
             Plane p = new();
             p.PlaneName = name;
             p.Destination = "land";
+            p.TimeOfAction = DateTime.Now.ToUniversalTime();
             _airportLogic.Land(p);
         }
 
@@ -46,14 +38,21 @@ namespace Airport.Controllers
         {
             Plane p = new()
             {
+                TimeOfAction = DateTime.Now.ToUniversalTime(),
                 PlaneName = name,
                 Destination = "takeOff"
             };
             _airportLogic.TakeOff(p);
         }
+        [HttpGet("current-state/{stationName}")]
+        public ActionResult<List<StationState>> GetCurrentState(string stationName)
+        {
+            return Ok(_airportLogic.GetCurrentState(stationName));
+        }
 
         [HttpGet("current-state")]
-        public ActionResult<List<StationState>> GetCurrentState() {
+        public ActionResult<List<StationState>> GetCurrentState()
+        {
             return Ok(_airportLogic.GetCurrentState());
         }
         [HttpGet("takeoffs")]
