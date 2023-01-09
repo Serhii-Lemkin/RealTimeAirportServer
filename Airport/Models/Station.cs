@@ -33,7 +33,7 @@ namespace Airport.Models
             incomingDelayed = false;
         }
 
-        internal async Task<string> Enter(Plane plane, TaskCompletionSource<string>? tcs = null, CancellationToken token = new CancellationToken())
+        public async Task<string> Enter(Plane plane, TaskCompletionSource<string>? tcs = null, CancellationToken token = new CancellationToken())
         {
             if (token.IsCancellationRequested) return "";
             if (tcs != null && tcs.Task.IsCanceled) return "";

@@ -8,7 +8,7 @@ namespace Airport.Services.ControlTower
 {
     public class ControllTower : IControllTower
     {
-        private readonly List<Station> AllStations;
+        public readonly List<Station> AllStations;
         private readonly ControlTowerChecker ctChecker;
 
         public bool Stopped { get; private set; }

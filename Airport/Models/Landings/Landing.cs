@@ -13,7 +13,11 @@ namespace Airport.Models.Landings
         private readonly IHubContext<AirportHub> hub;
         private readonly IPlaneHistoryRepository history;
 
-        public Landing(Plane plane, PlaneRoute route, Microsoft.AspNetCore.SignalR.IHubContext<Hubs.AirportHub> hub, Repositories.IPlaneHistoryRepository history)
+        public Landing(
+            Plane plane,
+            PlaneRoute route,
+            IHubContext<AirportHub> hub,
+            IPlaneHistoryRepository history)
         {
             this.plane = plane;
             _route = route;
@@ -72,7 +76,7 @@ namespace Airport.Models.Landings
             });
         }
 
-        async Task<string> EnterOneStation(Station s1, Station s2, CancellationToken token)
+        public async Task<string> EnterOneStation(Station s1, Station s2, CancellationToken token)
         {
             return await Task.Run(async()=>
             {
